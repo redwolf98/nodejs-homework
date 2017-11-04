@@ -5,6 +5,9 @@ var Twitter = require('twitter');
 
 var command = process.argv[2];
 var value;
+
+
+
 if(process.argv.length > 3) value = process.argv[3];
 
 switch (command){
@@ -49,6 +52,7 @@ function getMyTweets(){
        }
      }
    });
+   writeToLogFile("my-tweets", undefined);
 }
 
 function spotifySong(songName){
@@ -60,6 +64,7 @@ function spotifySong(songName){
     }
         songName = toTitleCase(songName);
         songName = songName.replace('"','');
+        songName = songName.replace(" ","+");
         var spotifyKeys = require("./spotify_keys");
         var Spotify = require('node-spotify-api');
         
@@ -104,8 +109,8 @@ function spotifySong(songName){
         }
        });
 
-
-
+       songName = songName.replace("+"," ");
+       writeToLogFile("spotify-this-song",songName);
 }
 
 
@@ -149,12 +154,12 @@ function findMovie(movieName){
                 console.log("* " + body.Language);
                 console.log("* " + body.Plot);
                 console.log("* " + body.Actors);
-
+                
                 // console.log(JSON.stringify(JSON.parse(body),undefined,2)); // Shows the entire response from the API call
               }
             });
-    
-       
+            movieName = movieName.replace("+"," ");
+            writeToLogFile("movie-this",movieName);
     
     }
     
@@ -191,10 +196,24 @@ function findMovie(movieName){
         }
         
         });
+
+        writeToLogFile("do-what-it-says",undefined);
     }
 
 
 function toTitleCase(str)
 {
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+}
+
+function writeToLogFile(command, value){
+    var fs = require("fs");
+    var logString = "Command: " + command;
+    if(value != null) logString += ' Value: "' + value + '"';
+    logString += " DateStamp: " + Date.now() + " \r\n";
+    
+    fs.appendFile("./log.txt",logString,function(error){
+        if(error) console.log(err);
+    });
+
 }
